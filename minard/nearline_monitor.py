@@ -1,12 +1,17 @@
-from .db import engine, engine_nl
-from .detector_state import get_latest_run
-from .pingcratesdb import ping_crates_list
-from .channelflagsdb import get_channel_flags, get_channel_flags_by_run
-from .triggerclockjumpsdb import get_clock_jumps, get_clock_jumps_by_run
-from .nlrat import RUN_TYPES
-from .occupancy import run_list, occupancy_by_trigger, occupancy_by_trigger_limit
-from .muonsdb import get_muons
-from .gain_monitor import crate_gain_monitor
+#CHANGE ALL
+
+#from db import engine, engine_nl
+
+import db
+
+from detector_state import get_latest_run
+from pingcratesdb import ping_crates_list
+from channelflagsdb import get_channel_flags, get_channel_flags_by_run
+from triggerclockjumpsdb import get_clock_jumps, get_clock_jumps_by_run
+from nlrat import RUN_TYPES
+from occupancy import run_list, occupancy_by_trigger, occupancy_by_trigger_limit
+from muonsdb import get_muons
+from gain_monitor import crate_gain_monitor
 
 # Limits for failing channel flags check
 OUT_OF_SYNC_1 = 32
@@ -114,7 +119,7 @@ def clock_jumps_run(run):
     Return the clock jumps status for a selected run
     '''
     clock_jumps_status = {}
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT run FROM trigger_clock_jumps WHERE run = %s", run)
 
@@ -167,7 +172,7 @@ def channel_flags_run(run):
     Return the channel flags status for a selected run
     '''
     channel_flags_status = {}
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT sync16 FROM channel_flags WHERE run = %s", run)
 
@@ -226,7 +231,7 @@ def ping_crates_run(run):
     '''
     Return ping crates status for selected run
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     ping_crates_status = {}
     result = conn.execute("SELECT status FROM ping_crates WHERE run = %i" % run)
@@ -273,7 +278,7 @@ def get_run_types(limit, selected_run, run_range_low, run_range_high, gold):
     '''
     Return a dictionary of run types for each run in the list
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if not selected_run and not run_range_high:
         # Nearline jobs run after run has finished

@@ -1,5 +1,6 @@
 import sqlalchemy
-from .db import engine
+#from .db import engine
+import db
 
 # Test map defined in Penn DAQ
 PENN_DAQ_TESTS = {
@@ -34,7 +35,7 @@ def get_penn_daq_tests(crate, slot, channel):
     """
     Get the ECAL tests that failed for a specified CCC
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT problems FROM test_status WHERE "
          "crate = %s AND slot = %s", (crate, slot))
@@ -54,7 +55,7 @@ def penn_daq_ccc_by_test(test, crate_sel, slot_sel, channel_sel):
     Get the CCCs for all the tests that failed for a specified
     test (can by "All" of them).
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if test != "All":
         test_bit = PENN_DAQ_TESTS[test]
@@ -90,7 +91,7 @@ def ecal_state(crate, slot, channel):
     """
     Get the hardware values determined by the ECAL for a CCC
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT vthr, tcmos_isetm, vbal_0, vbal_1, "
         "mbid, dbid, tdisc_rmp FROM fecdoc WHERE crate = %s AND slot = %s "

@@ -1,6 +1,7 @@
 import psycopg2
-from .db import engine
-from .views import app
+#from .db import engine
+import db
+from views import app#CHANGE
 from wtforms import Form, StringField, SelectField, validators
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import ValidationError
@@ -28,7 +29,7 @@ def get_experts():
     """
     Returns a list of the names of all on-call experts.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
     result = conn.execute("SELECT firstname, lastname FROM experts")
     row = result.fetchall()
     names = []
@@ -42,7 +43,7 @@ def get_supernova_experts():
     """
     Returns a list of the names of all on-call experts.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
     result = conn.execute("SELECT firstname, lastname FROM supernova_experts")
     row = result.fetchall()
     names = []
@@ -59,7 +60,7 @@ def get_shifter_information():
     Returns the first/last name of the current shifter and the first name of
     the on-call expert.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT firstname, lastname, email, expert, supernova_expert "
                           "FROM current_shifter_information")

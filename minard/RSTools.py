@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 # Need comment above to use bullet-point character
 from wtforms import Form, BooleanField, StringField, PasswordField, validators
-from .db import engine, engine_nl
+#from .db import engine, engine_nl #CHANGE
+import db
 from collections import OrderedDict
 import psycopg2
 import psycopg2.extras
 import json
 from dateutil import parser
 import datetime
-from .views import app
+from views import app #CHANGE
 
 
 ############ FORM FUNCTIONS ############
@@ -65,7 +66,7 @@ def file_pass_form_builder(formobj, display_info):
 def get_current_lists_run(run):
     c = False
     try:
-        conn = engine.connect()
+        conn = db.engine.connect()
         result = conn.execute("SELECT list FROM evaluated_runs WHERE run=%s" % (run,))
         data =  [int(row[0]) for row in result.fetchall()]
     except:
@@ -80,7 +81,7 @@ def get_current_lists_run(run):
 def get_run_lists():
     c = False
     try:
-        conn = engine.connect()
+        conn = db.engine.connect()
         result = conn.execute("SELECT name, id FROM run_lists ORDER BY name ASC")
         data = OrderedDict()
         for entry in result.fetchall():
@@ -101,7 +102,7 @@ def get_list_history(run):
     # key | run | uploaded_to | removed_from | name | timestamp | comment
     c = False
     try:
-        conn = engine.connect()
+        conn = db.engine.connect()
         c = True
         result = conn.execute("SELECT timestamp, uploaded_to, removed_from, comment, name FROM rs_history WHERE run=%s ORDER BY timestamp DESC", (run,))
         data = OrderedDict()
@@ -319,7 +320,7 @@ def get_RS_reports(criteria=None, run_min=None, run_max=None, limit=None):
 
     c = False
     try:
-        conn = engine_nl.connect()
+        conn = db.engine_nl.connect()
         c = True
         resultQuery = conn.execute(query)
 
@@ -357,7 +358,9 @@ def get_RS_reports(criteria=None, run_min=None, run_max=None, limit=None):
                         rs_tables[run_number][criteria] = table
 
         return rs_tables
-    except:
+    except Exception as e:#CHANGE (was initially just except)
+        print("An exception occurred: %s" % str(e)) #CHANGE (added)
+    	print('This is very sad')#CHANGE (added)
         return False
     
     finally:
@@ -515,7 +518,7 @@ def get_criteria_tables(runNum, crit_timestamp):
     query = query[:-4]  # Remove last ' OR '
     query += ") ORDER BY timestamp DESC LIMIT 50"
 
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     resultQuery = conn.execute(query)
 
     table_list = []
@@ -607,21 +610,30 @@ def result_logic(obj):
 
     return result
 
-def format_rs_results(rs_tables, crit_tables):
+def format_rs_results_original(rs_tables, crit_tables):
     '''Collect information for the "Run Selection Results" section of the page'''
 
-    display_info = OrderedDict()
-    for criteria in rs_tables:
+    display_info = OrderedDict()#initialize empty ordered dictionary
+    
+    for criteria in rs_tables:#rs_tables contains criteria in layer 1
+    #CHANGED: added .keys() above
+        print(type(criteria))
         # A collapsable header for each criteria tag
-        if criteria not in crit_tables:
+        
+        if criteria not in crit_tables:#only look at crits that are also in crit_tables
+            print('so so sad')#CHANGED (added)
             continue
-        rs_table = rs_tables[criteria]['meta_data']
-        rs_modules = rs_table['decision']['rs_modules']
-        crit_table = crit_tables[criteria]['meta_data']
+        rs_table = rs_tables[criteria]['meta_data']#this is the dict that contains deck_activity
+        rs_modules = rs_table['decision']['rs_modules']#some other dict with stuff
+        crit_table = crit_tables[criteria]['meta_data']#this also contains deck_activity but
+        #the elements in there are all set to 0 or None in both 96 and 94 so 
+        #I assume there is no relevant info there
+        
+        
 
         display_info[criteria] = OrderedDict()
         display_info[criteria]['criteria_result'] = rs_table['decision']['result']
-        display_info[criteria]['rs_modules'] = OrderedDict()
+        display_info[criteria]['rs_modules'] = OrderedDict() #does this make an empty ordered dict?
         for rs_module in rs_modules:
             # A (sub)collapsable header for each rs_module
             if rs_module == 'dqll':  # obsolete
@@ -708,6 +720,205 @@ def format_rs_results(rs_tables, crit_tables):
                         display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = crits[check]
 
     return display_info
+    
+    
+#CHANGE: I ADDED THE THING BELOW    
+    
+def format_rs_results(rs_tables, crit_tables):
+    '''Collect information for the "Run Selection Results" section of the page'''
+
+    display_info = OrderedDict()#initialize empty ordered dictionary
+    
+    for criteria in rs_tables:#rs_tables contains criteria in layer 1
+    #CHANGED: added .keys() above
+        print(type(criteria))
+        # A collapsable header for each criteria tag
+        
+        if criteria not in crit_tables:#only look at crits that are also in crit_tables
+            #print('so so sad')#CHANGED (added)
+            continue
+        rs_table = rs_tables[criteria]['meta_data']#this is the dict that contains deck_activity
+        rs_modules = rs_table['decision']['rs_modules']#some other dict with stuff
+        crit_table = crit_tables[criteria]['meta_data']#this also contains deck_activity but
+        #the elements in there are all set to 0 or None in both 96 and 94 so 
+        #I assume there is no relevant info there
+        
+        
+
+        display_info[criteria] = OrderedDict()
+        display_info[criteria]['criteria_result'] = rs_table['decision']['result']
+        display_info[criteria]['rs_modules'] = OrderedDict() #does this make an empty ordered dict?
+        for rs_module in rs_modules:
+            # A (sub)collapsable header for each rs_module
+            if rs_module == 'dqll':  # obsolete
+                continue
+            elif 'error' in rs_table[rs_module]:
+                display_info[criteria]['rs_modules'][rs_module] = "NO DATA"
+                
+                
+                continue
+
+            results = rs_table[rs_module]['results']
+            
+            if 'notes' in rs_table[rs_module]:
+                notes = rs_table[rs_module]['notes']
+            else:
+                notes = OrderedDict()
+            crits = crit_table[rs_module]
+
+            display_info[criteria]['rs_modules'][rs_module] = OrderedDict()
+            
+            
+            
+            display_info[criteria]['rs_modules'][rs_module]['checks'] = OrderedDict()
+            
+            
+            
+            #CHANGE: added if below
+            if rs_module == 'deck_activity':
+                display_info[criteria]['rs_modules'][rs_module]['test'] = "little text display"
+            for check in results:
+                # A line for each check (except overall rs_module result)
+                # WARNING: This is a mess since RS_reports have a messy inconsistent structure that
+                # doesn't necessarily line up perfectly with the criteria table used to produce them.
+                if check == 'and_result':
+                    display_info[criteria]['rs_modules'][rs_module]['module_result'] = results[check]
+                else:
+                    display_info[criteria]['rs_modules'][rs_module]['checks'][check] = OrderedDict()
+                    # Get check and overall result
+                    display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Check'] = check
+                    overall_res = result_logic(results[check])
+                    if overall_res == True:
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Result'] = "Pass"
+                    elif overall_res == False:
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Result'] = "Fail"
+                    else:
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Result'] = "Purgatory"
+
+                    # How to display the values depends on if there of subchecks, or it's the number of entries in a list that matter, etc
+                    if check not in notes:
+                        if results[check]:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = 0
+                        else:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = 1
+                    elif isinstance(notes[check], list):
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = len(notes[check])
+                    elif isinstance(notes[check], dict):
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = OrderedDict()
+                        for subcheck in notes[check]:
+                            if isinstance(notes[check][subcheck], float):
+                                string = ('%.2f' % notes[check][subcheck])
+                            else:
+                                string = notes[check][subcheck]
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'][subcheck] = string
+                    else:
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = notes[check]
+
+                    # How to display the thresholds depends on if there are subchecks, what it is, etc
+                    if check not in crits:
+                        if isinstance(display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'], dict):  # DQHL has subchecks grouped into processors in RS table, but not in criteria table...
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = OrderedDict()
+                            for subcheck in display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value']:
+                                if subcheck in crits:
+                                    string = subcheck
+                                    if isinstance(crits[subcheck], float):
+                                        string += ': %.2f' % (crits[subcheck])
+                                    else:
+                                        string += ': %s' % (crits[subcheck])
+                                    display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'][subcheck] = string
+                            if len(display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold']) == 0:
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = ''
+                        else:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = ''
+                    elif isinstance(crits[check], dict):
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = OrderedDict()
+                        for subcheck in crits[check]:
+                            if check == 'alarms':
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'][subcheck] = subcheck
+                            else:
+                                string = subcheck
+                                if isinstance(crits[check][subcheck], float):
+                                    string += (': %.2f' % (crits[check][subcheck]))
+                                else:
+                                    string += (': %s' % (crits[check][subcheck]))
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'][subcheck] = string
+                    else:
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = crits[check]
+            
+            else:
+                for check in results:
+                # A line for each check (except overall rs_module result)
+                # WARNING: This is a mess since RS_reports have a messy inconsistent structure that
+                # doesn't necessarily line up perfectly with the criteria table used to produce them.
+                    if check == 'and_result':
+                        display_info[criteria]['rs_modules'][rs_module]['module_result'] = results[check]
+                    else:
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check] = OrderedDict()
+                    # Get check and overall result
+                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Check'] = check
+                        overall_res = result_logic(results[check])
+                        if overall_res == True:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Result'] = "Pass"
+                        elif overall_res == False:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Result'] = "Fail"
+                        else:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Result'] = "Purgatory"
+
+                    # How to display the values depends on if there of subchecks, or it's the number of entries in a list that matter, etc
+                        if check not in notes:
+                            if results[check]:
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = 0
+                            else:
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = 1
+                        elif isinstance(notes[check], list):
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = len(notes[check])
+                            
+                            print(type(notes[check]))
+                            
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Comment'] = notes[check][0]
+                        elif isinstance(notes[check], dict):
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = OrderedDict()
+                            for subcheck in notes[check]:
+                                if isinstance(notes[check][subcheck], float):
+                                    string = ('%.2f' % notes[check][subcheck])
+                                else:
+                                    string = notes[check][subcheck]
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'][subcheck] = string
+                        else:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'] = notes[check]
+
+                    # How to display the thresholds depends on if there are subchecks, what it is, etc
+                        if check not in crits:
+                            if isinstance(display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value'], dict):  # DQHL has subchecks grouped into processors in RS table, but not in criteria table...
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = OrderedDict()
+                                for subcheck in display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Value']:
+                                    if subcheck in crits:
+                                        string = subcheck
+                                        if isinstance(crits[subcheck], float):
+                                            string += ': %.2f' % (crits[subcheck])
+                                        else:
+                                            string += ': %s' % (crits[subcheck])
+                                        display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'][subcheck] = string
+                                if len(display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold']) == 0:
+                                    display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = ''
+                            else:
+                                display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = ''
+                        elif isinstance(crits[check], dict):
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = OrderedDict()
+                            for subcheck in crits[check]:
+                                if check == 'alarms':
+                                    display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'][subcheck] = subcheck
+                                else:
+                                    string = subcheck
+                                    if isinstance(crits[check][subcheck], float):
+                                        string += (': %.2f' % (crits[check][subcheck]))
+                                    else:
+                                        string += (': %s' % (crits[check][subcheck]))
+                                    display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'][subcheck] = string
+                        else:
+                            display_info[criteria]['rs_modules'][rs_module]['checks'][check]['Threshold'] = crits[check]
+
+    return display_info
 
 def get_neighbouring_runs(runNum):
     '''Return the run numbers of the previous and next runs'''
@@ -722,7 +933,7 @@ def get_neighbouring_runs(runNum):
 
     c = False
     try:
-        conn = engine_nl.connect()
+        conn = db.engine_nl.connect()
         c = True
 
         resultQuery_prev = conn.execute(query_prev)
@@ -874,7 +1085,7 @@ def get_RS_reports_date_range(criteria=None, min_runTime=None, max_runTime=None)
     query += " ORDER BY run_min ASC"
     c = False
     try:
-        conn = engine_nl.connect()
+        conn = db.engine_nl.connect()
         c = True
         resultQuery = conn.execute(query)
         rs_tables_list = []

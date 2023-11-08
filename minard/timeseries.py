@@ -3,7 +3,9 @@ import sys
 from redis import Redis
 import bisect
 from redistools import maxcard, avgcard, maxcrate, avgcrate
-from .db import engine
+#from db import engine#CHANGE
+
+import db
 
 redis = Redis()
 
@@ -81,7 +83,7 @@ def get_cavity_temp(sensor, start, stop, step):
 
     Note: This function assumes that the table has a column named timestamp.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     query = ("SELECT floor(extract(epoch from timestamp)/%s)::numeric::integer AS id, avg(temp) "
              "FROM cavity_temp WHERE timestamp >= to_timestamp(%s) AND "
@@ -107,7 +109,7 @@ def get_psup_temp(sensor, start, stop, step):
     """ Same function as above, but gets the PSUP temp instead
     """
     sensor = sensor + 30
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     query = ("SELECT floor(extract(epoch from timestamp)/%s)::numeric::integer AS id, avg(temp) "
              "FROM cavity_temp WHERE timestamp >= to_timestamp(%s) AND "

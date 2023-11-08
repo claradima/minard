@@ -1,5 +1,5 @@
 import sqlalchemy
-from .views import app
+from views import app #CHANGE (had dot before views) 
 
 engine = sqlalchemy.create_engine('postgresql://%s:%s@%s:%i/%s' %
                                  (app.config['DB_USER'], app.config['DB_PASS'],

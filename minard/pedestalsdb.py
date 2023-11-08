@@ -1,10 +1,11 @@
-from .db import engine
+#from .db import engine
+import db
 
 def get_pedestals(crate, slot, channel):
     '''
     Get the average QHS/QHL/QLX for a give C/C/C to post to the channel status.
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT DISTINCT ON (crate, slot, channel, cell) "
         "qhs_avg, qhl_avg, qlx_avg FROM pedestals WHERE "
@@ -27,7 +28,7 @@ def qhs_by_channel(crate, slot, channel, cell):
     '''
     Get the QHS values for every pedestal, which is histogrammed.
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT DISTINCT ON (crate, slot, channel, cell) "
         "qhs, slot, channel, cell FROM pedestals WHERE crate = %s  "
@@ -52,7 +53,7 @@ def bad_pedestals(crate, slot, channel, cell, charge_type, qmax, qmin, limit):
     '''
     Get information about the pedestals outside a given range for QHS/QHL/QLX.
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT DISTINCT ON (crate, slot, channel, cell) "
         "crate, slot, channel, cell, qhs_avg, qhl_avg, qlx_avg, num_events FROM pedestals "

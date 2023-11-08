@@ -1,6 +1,9 @@
-from .db import engine_nl, engine
-from .detector_state import get_latest_run
-from .polling import pmt_type, PMT_TYPES
+#CHANGE ALL
+
+#from .db import engine_nl, engine
+import db
+from detector_state import get_latest_run
+from polling import pmt_type, PMT_TYPES
 
 def get_channel_flags(limit, run_range_low, run_range_high, summary, gold):
     """
@@ -8,7 +11,7 @@ def get_channel_flags(limit, run_range_low, run_range_high, summary, gold):
     The dictionaries keep track of the number of sync16s, number of syn24s,
     number of out-of-sync channels, and number of missed count channels.
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
 
     if not run_range_high:
@@ -84,7 +87,7 @@ def get_channel_flags(limit, run_range_low, run_range_high, summary, gold):
 
     # Grab the PMT type if its asked for
     if not summary:
-        detector_conn = engine.connect()
+        detector_conn = db.engine.connect()
         types = pmt_type(detector_conn)
 
     for run, cmos_sync16, cgt_sync24, missed_count, cmos_sync16_pr, cgt_sync24_pr, crate, slot, channel, time in rows:
@@ -124,8 +127,8 @@ def get_channel_flags_by_run(run):
     Returns a list of the missed count and out-of-sync channels
     for a requested run
     """
-    conn = engine_nl.connect()
-    detector_conn = engine.connect()
+    conn = db.engine_nl.connect()
+    detector_conn = db.engine.connect()
 
     # Find all of the out-of-sync and missed-count channels for the run selected
     result = conn.execute("SELECT DISTINCT ON (crate, slot, channel) crate, slot, channel, "
@@ -184,7 +187,7 @@ def get_number_of_syncs(run):
     Get the number of sync16 and sync24s in a selected run
     '''
 
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT run, sync16, sync24, resync FROM channel_flags "
                           "WHERE run = %s ORDER BY timestamp DESC limit 1", (run))

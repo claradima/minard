@@ -1,11 +1,12 @@
-from .db import engine_nl
+#from .db import engine_nl
+import db
 
 def get_nearline_status(run):
     """
     Get all the nearline jobs and their
     statuses for a given run
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT name, status FROM nearline WHERE run = %s "
                           "ORDER BY timestamp ASC", run)
@@ -22,7 +23,7 @@ def current_run():
     """
     Get the current run from the PSQL database
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT run from current_nearline_run")
     run = result.fetchone()[0]
@@ -33,7 +34,7 @@ def job_types():
     """
     Get all of the nearline job types
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT name FROM nearline "
                           "ORDER BY name DESC")
@@ -48,7 +49,7 @@ def get_failed_runs(run, run_range_low=0, run_range_high=0):
     """
     Get all failed runs after a given runnumber or over a run range
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     if run_range_high:
         result = conn.execute("SELECT DISTINCT ON (run, name) run, name, status FROM nearline "
@@ -79,7 +80,7 @@ def reprocessed_runs():
     """
     Get a list of runs that have been automatically reprocessed
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON (run) run FROM reprocessed_run "
                           "ORDER BY run DESC")
@@ -94,7 +95,7 @@ def reprocessed_run(run):
     """
     Return whether the run has been reprocessed
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT run FROM reprocessed_run WHERE run = %s", (run,))
 

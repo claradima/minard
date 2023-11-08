@@ -1,5 +1,7 @@
-from .db import engine_nl
-from .detector_state import get_latest_run
+#from db import engine_nl
+import db
+
+from detector_state import get_latest_run #CHANGE 
 
 def get_clock_jumps(limit, selected_run, run_range_low, run_range_high, gold):
     """
@@ -7,7 +9,7 @@ def get_clock_jumps(limit, selected_run, run_range_low, run_range_high, gold):
     specifing the number of clock jump for 
     each run on the 10 and 50MHz clocks
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
 
     if not selected_run and not run_range_high:
@@ -92,7 +94,7 @@ def get_clock_jumps_by_run(run):
     the correction size (clock ticks),
     and the GTID of each clock jump
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON (run, gtid10, gtid50) "
                           "clockjump10, clockfix10, gtid10, "

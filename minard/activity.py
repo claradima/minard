@@ -1,10 +1,11 @@
-from .db import engine
+#from .db import engine
+import db
 
 def get_deck_activity(limit=25, offset=0):
     '''
     Return a dictionary of deck activity information
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT checkintime, checkouttime, checkinrun, "
                           "checkoutrun, firstname, lastname, reason FROM logbook "

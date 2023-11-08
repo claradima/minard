@@ -1,10 +1,11 @@
-from .db import engine_nl
+#from .db import engine_nl
+import db
 
 def get_light_level(run_begin, run_end, fv_cut):
     '''
     Get the light levels from the 210Po peak location
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON(run) run::INTEGER, peak "
                           "FROM po210_nhits WHERE run >= %s AND run <= %s "
@@ -20,7 +21,7 @@ def get_light_level_clean(run_begin, run_end, fv_cut):
     '''
     Get the light levels from the 210Po peak location
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON(run) run::INTEGER, peak_clean "
                           "FROM po210_nhits WHERE run >= %s AND run <= %s "
@@ -35,7 +36,7 @@ def get_all_light_levels(run_begin, run_end, fv_cut, limit):
     '''
     Get the light levels from the 210Po peak location
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON(run) run::INTEGER, peak, peak_clean, "
                           "peak_unc, peak_clean_unc, fv_cut, entries "

@@ -1,6 +1,7 @@
 from wtforms import Form, BooleanField, StringField, validators, IntegerField, PasswordField
-from .db import engine
-from .views import app
+#from db import engine#CHANGE
+import db
+from views import app#CHANGE
 import psycopg2
 import psycopg2.extensions
 
@@ -68,7 +69,7 @@ def get_fec_db_history(crate, card, channel):
     """
     Returns a list of the FEC and/or DB swaps for a given channel.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     query = ("SELECT run, timestamp, mbid, dbid FROM ("
         "SELECT run, mbid, dbid FROM ("
@@ -101,7 +102,7 @@ def get_channels(kwargs, limit=100, sort_by=None):
 
     `limit` should be the maximum number of records returned.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     fields = [field.name for field in ChannelStatusForm()]
 
@@ -136,7 +137,7 @@ def get_channel_history(crate, slot, channel, limit=None):
     Returns a list of the channel statuses for a single channel in the
     detector. `limit` is the maximum number of records to return.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     query = "SELECT * FROM channel_status " + \
         "WHERE crate = %s AND slot = %s AND channel = %s " + \
@@ -159,7 +160,7 @@ def get_pmt_info(crate, slot, channel):
     """
     Returns a dictionary of the pmt info for a given channel.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM pmt_info "
         "WHERE crate = %s AND slot = %s AND channel = %s",
@@ -180,7 +181,7 @@ def get_pmt_types():
     """
     Returns a list of the pmt types for all channels.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT crate, slot, channel, type FROM pmt_info")
 
@@ -205,7 +206,7 @@ def get_nominal_settings_for_run(run=0):
     Returns a dictionary of the nominal settings for all the channels in the
     detector for a given run.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if run == 0:
         # current nominal settings
@@ -239,7 +240,7 @@ def get_nominal_settings(crate, slot, channel):
     Returns a dictionary of the current nominal settings for a single channel
     in the detector.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM current_nominal_settings "
         "WHERE crate = %s AND slot = %s AND channel = %s",
@@ -258,7 +259,7 @@ def get_discriminator_threshold(crate, slot):
     Get the current discriminator threshold for a specified crate and card.
     Returns a dictionary of the discriminator threshold and zero threshold.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     # Select most recent zdisc with ecalid field
     result = conn.execute("SELECT zero_disc FROM current_zdisc WHERE "
@@ -315,7 +316,7 @@ def get_gtvalid_lengths(crate, slot):
     TACs per CMOS chip so there are two GTValid lengths per channel. Returns
     a dictionary of the gtvalids lengths for each TAC
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT gtvalid0_length, gtvalid1_length FROM gtvalid "
         "WHERE crate = %s AND slot = %s ORDER BY timestamp DESC LIMIT 1", (crate, slot))
@@ -344,7 +345,7 @@ def get_all_thresholds(run):
 
     message = ""
 
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     zero = [[0 for i in range(16)] for j in range(19)]
     thr = [[0 for i in range(16)] for j in range(19)]
@@ -442,7 +443,7 @@ def get_maxed_thresholds(run):
 
     Returns a list of the form [(crate, slot, [channels]), ...].
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if run == 0:
         result = conn.execute("SELECT crate, slot, vthr FROM current_detector_state "
@@ -468,7 +469,7 @@ def get_channel_status(crate, slot, channel):
     Returns a dictionary of the channel status for a single channel in the
     detector.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM current_channel_status "
         "WHERE crate = %s AND slot = %s AND channel = %s",

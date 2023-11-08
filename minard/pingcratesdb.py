@@ -1,11 +1,14 @@
-from .db import engine_nl
-from .detector_state import get_latest_run, get_mtc_state_for_run
+#CHANGE BOTH
+
+#from db import engine_nl
+import db
+from detector_state import get_latest_run, get_mtc_state_for_run
 
 def ping_crates_list(limit, selected_run, run_range_low, run_range_high, gold):
     '''
     Returns a list of ping crates information
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     if not selected_run and not run_range_high:
         # Get all ping crates information from the nearline database since (run - limit)

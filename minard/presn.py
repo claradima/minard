@@ -1,5 +1,5 @@
 import couchdb
-from . import app
+from __init__ import app#CHANGE
 from datetime import datetime, timedelta
 
 def load_presn_runs(offset, limit):

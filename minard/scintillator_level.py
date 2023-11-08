@@ -1,10 +1,11 @@
-from .db import engine_nl
+#from .db import engine_nl
+import db
 
 def get_scintillator_level(run_begin, run_end):
     '''
     Get the scintillator level from the scint_level table.
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     # Get one result per run, with most recent timestamp
     result = conn.execute("SELECT DISTINCT ON(run) run::INTEGER, scint_lvl FROM scint_level WHERE " 
@@ -20,7 +21,7 @@ def get_av_z_offset(run_begin, run_end):
     '''
     Retrieve the daily AV z-offset from the av-offset table.
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     # Get one result per run, with most recent timestamp
     result = conn.execute("SELECT DISTINCT ON(run) run::INTEGER, av_offset_z FROM av_offset WHERE " 
@@ -39,7 +40,7 @@ def get_av_rope_data(run_begin, run_end):
 
     Note: Rope B reading is not used.
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT run::INTEGER, avg_rope_a_reading, avg_rope_b_reading, "
                           "avg_rope_c_reading, avg_rope_d_reading, avg_rope_e_reading, "

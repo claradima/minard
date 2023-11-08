@@ -1,4 +1,5 @@
-from .db import engine 
+#from .db import engine
+import db 
 import detector_state
 
 # PMT Type defines
@@ -42,7 +43,7 @@ def polling_runs(limit=100):
     Returns two lists of runs, one where CMOS rates were polled using check
     rates, the other where base currents were polled using check rates.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT DISTINCT ON (run) run FROM cmos "
         "ORDER BY run DESC LIMIT %s", (limit,))
@@ -70,7 +71,7 @@ def get_most_recent_polling_info(crate, slot, channel):
     """
     polls = {}
 
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     # Get the latest cmos rates
     result = conn.execute("SELECT * FROM cmos WHERE crate = %s "
@@ -112,7 +113,7 @@ def get_base_current_history(crate, slot, channel, min_run, max_run):
 
     for all runs with base current data.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT timestamp, base_current FROM base "
                           "WHERE crate = %s AND slot = %s AND channel = %s "
@@ -135,7 +136,7 @@ def get_cmos_rate_history(crate, slot, channel, min_run, max_run):
 
     for all runs with cmos rate data.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT timestamp, cmos_rate FROM cmos "
                           "WHERE crate = %s AND slot = %s AND channel = %s "
@@ -154,7 +155,7 @@ def polling_info(data_type, run_number):
     """
     Returns the polling data for the detector
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     # Hold the polling information
     # for the entire detector
@@ -205,7 +206,7 @@ def polling_summary(run):
     for the run nearest to the requested run. Split up
     the OWL and HQE tubes separately.
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     messages = []
 
@@ -349,7 +350,7 @@ def polling_check(high_rate, low_rate, pct_change):
     of channels with rates changing by more than 100%, a list
     of high rate channels, and a list of low rate channels. 
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     run_number = []
 
@@ -530,7 +531,7 @@ def polling_info_card(data_type, run_number, crate):
     """
     Returns the polling data for a crate
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     # Hold the polling information
     # for a single crate
@@ -577,7 +578,7 @@ def get_vmon(crate, slot):
     """
     Get the vmon data for a given crate/slot
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     voltages = ", ".join(key for key in voltages_str_dict)
 
@@ -609,7 +610,7 @@ def get_vmon_history(crate, slot):
     """
     Get the vmon history data for given crate/slot
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     voltages = ", ".join(key for key in voltages_str_dict)
     query = "to_char(timestamp, 'Mon DD YYYY HH12:MI:SS'), "

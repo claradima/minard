@@ -1,13 +1,14 @@
-from .db import engine_nl
+#from .db import engine_nl
+import db
 
 def getStandardRunList():
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     result = conn.execute("SELECT run_number FROM cssproc WHERE standard_run = %s ORDER BY run_number DESC",('t'))
     info = result.fetchall()
     return [i[0] for i in info]
 
 def pull_down_test_scores(run_number):
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     result = conn.execute("SELECT kstest_highocc,kstest_lowocc,chisqtest_highocc,chisqtest_lowocc FROM cssproc WHERE run_number = %s",(run_number))
     info = result.fetchall()
     return info[0]

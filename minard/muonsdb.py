@@ -1,5 +1,6 @@
-from .db import engine_nl
-from .detector_state import get_latest_run
+#from db import engine_nl
+import db
+from detector_state import get_latest_run#CHANGE
 import time
 
 TZERO = 14610*24*3600
@@ -8,7 +9,7 @@ def get_muons(limit, selected_run, run_range_low, run_range_high, gold, atm):
     """
     Returns a list of muon gtids for either a run list or a selected run
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     runs = []
 
@@ -108,7 +109,7 @@ def get_muon_info_by_run(selected_run):
     '''
     Get the GTID and time for each identified muon in the run
     '''
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON (a.run) a.gtids, a.days, a.secs, a.nsecs, "
                           "b.gtids, b.days, b.secs, b.nsecs, c.gtids, c.days, c.secs, "

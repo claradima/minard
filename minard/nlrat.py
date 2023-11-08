@@ -3,7 +3,7 @@ import glob
 import os
 import re
 from redis import Redis
-from .views import app
+from views import app#CHANGE
 
 REDIS_SET = "nlrat-runs"
 redis = Redis()

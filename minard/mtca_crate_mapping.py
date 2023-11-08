@@ -1,6 +1,7 @@
 from wtforms import Form, validators, IntegerField, SelectField, PasswordField
-from .db import engine
-from .views import app
+#from .db import engine
+import db
+from views import app #CHANGE
 import psycopg2
 import psycopg2.extensions
 
@@ -128,7 +129,7 @@ class OWLCrateMappingForm(Form):
 
 def get_mtca_retriggers():
 
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM mtca_retriggers ORDER BY timestamp DESC LIMIT 1")
 
@@ -140,7 +141,7 @@ def get_mtca_retriggers():
 
 def get_mtca_autoretriggers():
 
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM mtca_auto_retriggers ORDER BY timestamp DESC LIMIT 1")
 
@@ -155,7 +156,7 @@ def get_mtca_crate_mapping(mtca):
     Returns a dictionary of the channel status for a single channel in the
     detector.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM current_mtca_crate_mapping WHERE mtca = %s",
                           (mtca,))
@@ -228,7 +229,7 @@ def mtca_relay_status(mtca):
     the MTC/A+ (or the CTC) being broken, so that information
     is not in the mtca_relay_status table.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM mtca_relay_status WHERE mtca = %s "
                           "ORDER BY timestamp DESC LIMIT 1" % (mtca,))

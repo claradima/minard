@@ -1,14 +1,18 @@
 from __future__ import print_function, division
-from .views import app
-from .db import engine, engine_nl
-from .channeldb import get_nominal_settings_for_run
+from views import app#CHANGE
+
+#from db import engine, engine_nl
+
+import db#CHANGE
+
+from channeldb import get_nominal_settings_for_run#CHANGE
 from collections import defaultdict
 
 def get_latest_run():
     """
     Returns the latest run number.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT last_value FROM run_number")
 
@@ -18,7 +22,7 @@ def get_runs_with_run_type(run, run_type, max_run=1e9):
     """
     Returns a list all runs with a certain run type with a given run limit
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT run from run_state where run > %s and run < %s AND (run_type & %s) > 0 ", \
                           (run, max_run, run_type))
@@ -35,7 +39,7 @@ def get_mtc_state_for_run(run=0):
     Returns a dictionary of the mtc settings for a given run. If there is no
     row in the database for the run, returns None.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM mtc WHERE key = (SELECT mtc FROM run_state WHERE run = %s)", (run,))
 
@@ -52,7 +56,7 @@ def get_tubii_state_for_run(run=0):
     Returns a dictionary of the tubii settings for a given run. If there is no
     row in the database for the run, returns None.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM tubii WHERE key = (SELECT tubii FROM run_state WHERE run = %s)", (run,))
 
@@ -69,7 +73,7 @@ def get_caen_state_for_run(run=0):
     Returns a dictionary of the caen settings for a given run. If there is no
     row in the database for the run, returns None.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM caen WHERE key = (SELECT caen FROM run_state WHERE run = %s)", (run,))
 
@@ -86,7 +90,7 @@ def get_detector_state(run=0):
     Returns a dictionary of the crate settings for a given run. If there is no
     row in the database for the run, returns None.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM detector_state WHERE run = %s", (run,))
 
@@ -133,7 +137,7 @@ def get_alarms(run=0):
     then return the currently active alarms. If there is no row in the database
     for the run, returns None.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if run == 0:
         result = conn.execute("SELECT * FROM active_alarms, alarm_descriptions "
@@ -174,7 +178,7 @@ def compare_ecal_to_detector_state(run, crate, slot):
     user to select crate and slot as well.
     Returns lists with differences between the states.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if run == 0:
         run = get_latest_run()
@@ -555,7 +559,7 @@ def get_nhit_monitor_thresholds(limit=100, offset=0):
     """
     Returns a list of the latest nhit monitor records in the database.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM nhit_monitor_thresholds ORDER BY timestamp DESC LIMIT %s OFFSET %s", (limit,offset))
 
@@ -571,7 +575,7 @@ def get_nhit_monitor(key):
     """
     Returns an nhit monitor record from the database.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM nhit_monitor WHERE key=%s", (key,))
 
@@ -587,7 +591,7 @@ def get_nhit_monitor_thresholds_nearline(limit=100, offset=0, sort_by="run", run
     """
     Returns a list of the latest nhit monitor records in the nearline database.
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     if run_range_high:
         if sort_by == "run":
@@ -618,7 +622,7 @@ def get_nhit_monitor_nearline(key):
     """
     Return an nhit monitor record from the nearline database.
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT * FROM nhit_monitor WHERE key=%s", (key,))
 
@@ -638,7 +642,7 @@ def get_latest_trigger_scans():
 
     Returns None if there are no trigger scans.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("select distinct on (name) * from trigger_scan order by name, key desc")
 
@@ -662,7 +666,7 @@ def get_trigger_scan_for_run(run):
     """
     names = ['N100HI','N100LO','N100MED','N20LB','N20','OWLN']
 
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if run == 0:
         # get the latest trigger scan
@@ -682,7 +686,7 @@ def fetch_from_table_with_key(table_name, key, key_name='key'):
     if key is None:
         key = "(SELECT max(%s) FROM %s)" % (key_name, table_name)
 
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     command = "SELECT * FROM %s WHERE %s = %s" % (table_name, key_name, key)
     res =  conn.execute(command)
@@ -726,7 +730,7 @@ def get_run_state(run):
 
     Returns None if there is no data for that particular run.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if run is None:
         # Return the latest run
@@ -746,7 +750,7 @@ def get_run_state(run):
     return dict(zip(keys,row))
 
 def get_hv_nominals():
-    conn = engine.connect()
+    conn = db.engine.connect()
     command = "SELECT crate,supply,nominal FROM hvparams ORDER BY crate ASC"
     res =  conn.execute(command)
     if res is None:

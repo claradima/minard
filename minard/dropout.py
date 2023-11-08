@@ -1,9 +1,10 @@
-from .db import engine_nl
+#from .db import engine_nl
+import db
 import json
 from math import log10
 
 def get_details(run_number, trigger_type):
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     command = ("select f.rate, f.peak_offset, f.sigma, f.separation, p.x_vals, "
     "p.y_vals, p.fit_vals, p.chisqr, p.normalization from dropout_fits as f INNER JOIN dropout_plots as p "
     "on f.fit_plot=p.key where p.run=%s and p.trigger_type=%s")
@@ -36,7 +37,7 @@ def get_fits(trigger_type=0, run_range=None):
     "fit.fit_plot=plots.key where trigger_type=%s")
     command += clause
 
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     result = conn.execute(command, args)
 
     ret = result.fetchall()

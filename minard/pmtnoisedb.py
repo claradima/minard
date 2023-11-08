@@ -1,6 +1,7 @@
-from .db import engine_nl
+#from .db import engine_nl
+import db
 from datetime import datetime
-from .tools import total_seconds
+from tools import total_seconds#CHANGE
 
 SECOND_PER_DAY = 24*60*60
 SECOND_PER_MICROSECOND = 1e-6
@@ -18,7 +19,7 @@ def dictify(rows):
 
 def get_noise_results(limit=100, offset=0):
     epoch = datetime(1970, 1, 1)
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     rows = conn.execute('SELECT * FROM pmtnoise '
                         'ORDER BY run_number DESC '
                         'LIMIT %s OFFSET %s;', (limit, offset))
@@ -30,7 +31,7 @@ def get_noise_results(limit=100, offset=0):
     return rows
 
 def get_run_by_number(run):
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
     rows = conn.execute('SELECT * FROM pmtnoise WHERE %s = run_number;', \
                         (int(run)))
     return dictify(rows)

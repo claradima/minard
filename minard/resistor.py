@@ -1,9 +1,10 @@
 from __future__ import print_function, division
-from .db import engine
+#from .db import engine
+import db
 from wtforms import Form, DecimalField, validators, IntegerField, PasswordField, SelectField
 import psycopg2
 import psycopg2.extensions
-from .views import app
+from views import app#CHANGE
 
 V_BP_DROP = 10 # voltage drop across backplane
 R_PMT = 17100000 # resistance of PMT base
@@ -112,7 +113,7 @@ def get_resistor_values(crate, slot):
     Returns a dictionary of the resistor values for a single card in the
     detector.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT * FROM pmtic_calc "
         "WHERE crate = %s AND slot = %s",
@@ -135,7 +136,7 @@ def get_hv_nominal(crate, slot):
     Returns the nominal HV for a given crate and slot. The slot is necessary
     since the OWL slots are actually powered from the 'B' supply on crate 16.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     if crate in (3,13,18) and slot == 15:
         result = conn.execute("SELECT nominal FROM hvparams WHERE crate = %s AND supply = %s", (16, 'B'))
@@ -149,7 +150,7 @@ def get_resistors(crate, slot):
     Returns a dictionary containing information about the PMTIC resistors
     including the actual and ideal resistors and voltages.
     """
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     resistors = get_resistor_values(crate, slot)
 

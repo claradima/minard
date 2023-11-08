@@ -1,11 +1,12 @@
-from .db import engine
+#from .db import engine
+import db
 import datetime
 
 def get_radon_monitor(yr_low, mn_low, d_low, yr_high, mn_high, d_high):
     '''
     Get the radon monitor data between two dates.
     '''
-    conn = engine.connect()
+    conn = db.engine.connect()
 
     result = conn.execute("SELECT po210_counts, po212_counts, po214_counts, po216_counts, "
                           "po218_counts, livetime, start_time FROM radon_monitor ORDER BY "

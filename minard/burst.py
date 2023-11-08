@@ -1,6 +1,7 @@
 import couchdb
-from . import app
-from .db import engine, engine_nl
+from __init__ import app#change
+#from .db import engine, engine_nl
+import db
 from time import strftime
 from datetime import datetime
 import calendar
@@ -271,7 +272,7 @@ def get_run_type(run):
         29:"Scint. Fill"
     }
 
-    conn = engine.connect()
+    conn = db.engine.connect()
     run_string = ""
     try:
         result = conn.execute("SELECT run_type FROM run_state WHERE run = %s", run)

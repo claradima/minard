@@ -1,11 +1,12 @@
-from .db import engine_nl
-from .detector_state import get_latest_run
+#from .db import engine_nl
+import db
+from detector_state import get_latest_run#CHANGE
 
 def crate_gain_monitor(limit, selected_run, run_range_low, run_range_high, gold):
     """
     Returns a list of runs and the QHS peak by crate for a given set of runs
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     if not selected_run and not run_range_high:
         latest_run = get_latest_run()
@@ -52,7 +53,7 @@ def crate_average(selected_run, run_limit):
     QHS peak falls outside the average QHS peak
     calculated over run_limit runs.
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     SIGMA = 3
     run = selected_run - run_limit
@@ -99,7 +100,7 @@ def crate_gain_history(run_range_low, run_range_high, crate, qhs_low, qhs_max):
     Return a list of [run, qhs peak] for a specific crate
     and run range
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON (run, crate) "
         "run, qhs_peak FROM gain_monitor WHERE run >= %s AND "

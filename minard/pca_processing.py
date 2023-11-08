@@ -5,8 +5,9 @@ import functools
 import ratdbloader
 import pca_flags
 import detectorviz
-from . import app
-from .db import engine, engine_nl
+from __init__ import app#CHANGE
+#from .db import engine, engine_nl
+#import db
 
 path_for_files = "/mnt/"
 scratch = "/var/www/minard/static/scratch"

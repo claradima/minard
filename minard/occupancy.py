@@ -1,11 +1,12 @@
-from .db import engine_nl
-from .detector_state import get_latest_run
+#from .db import engine_nl
+import db
+from detector_state import get_latest_run#CHANGE
 
 def occupancy_by_trigger_limit(limit, selected_run, run_range_low, run_range_high, gold):
     """
     Returns a dictionary of the ESUMH occupacy status indexed by run
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
 
     try:
@@ -76,7 +77,7 @@ def occupancy_by_trigger(trigger_type, run, find_issues):
     Returns a list specifing the normalized occupancy
     for the trigger type.
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     result = conn.execute("SELECT DISTINCT ON (run, lcn, trigger_bit) "
                           "lcn, trigger_norm, occupancy "
@@ -109,7 +110,7 @@ def run_list(limit, run_range_low, run_range_high, gold):
     Get a list of runs where the trigger
     occupancy job ran.
     """
-    conn = engine_nl.connect()
+    conn = db.engine_nl.connect()
 
     if not run_range_high:
         latest_run = get_latest_run()
